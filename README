@@ -1,8 +1,12 @@
-Python library for parse apache access logs.
+Python library for parse chery_py_access, which is similar to apache access logs.
+
+This library was forked from
+	git@github.com:basuke/Apache-Access-Log-Parse-Library-for-Python.git
 
 You can clone this repository as 'apache' and place anywhere you want.
 
-$ git clone git@github.com:basuke/Apache-Access-Log-Parse-Library-for-Python.git apache
+Nikitin Konstantin
+nk.0@ya.ru
 
 
 Written by basuke@kanshin.com

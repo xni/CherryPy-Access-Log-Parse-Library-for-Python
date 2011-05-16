@@ -5,6 +5,14 @@ import time
 import re
 import subprocess
 
+
+"""
+Module for parsing CherryPy access log files.
+
+Branched from https://github.com/basuke/Apache-Access-Log-Parse-Library-for-Python/commits/master
+"""
+
+
 def parse(*paths):
 	"""
 	parse all access logs and return list of logs.
@@ -21,6 +29,7 @@ def parse(*paths):
 			if log: logs.append(log)
 	
 	return logs
+
 
 def openLogFile(path):
 	"""
@@ -53,6 +62,7 @@ def openLogFile(path):
 	else:
 		return open(path, 'r')
 
+
 def parseLogLine(line):
 	"""
 	parse one line of access log and return Log object.
@@ -61,6 +71,7 @@ def parseLogLine(line):
 	if not match: return None
 	
 	return Log(*match.groups())
+
 
 class SuperList(list):
 	def len(self):
@@ -120,7 +131,7 @@ class Log(object):
 	def timestampTuple():
 		def fget(self):
 			if not self._timestampTuple:
-				self._timestampTuple = time.strptime(self.timestampStr[:-6], "%d/%b/%Y:%H:%M:%S")
+				self._timestampTuple = time.strptime(self.timestampStr[1:-1], "%d/%b/%Y:%H:%M:%S")
 			
 			return self._timestampTuple
 		return locals()
@@ -139,7 +150,7 @@ class Log(object):
 	
 	year	= property(fget=lambda s: s.timestampTuple[0])
 	month	= property(fget=lambda s: s.timestampTuple[1])
-	day		= property(fget=lambda s: s.timestampTuple[2])
+	day	= property(fget=lambda s: s.timestampTuple[2])
 	hour	= property(fget=lambda s: s.timestampTuple[3])
 	minute	= property(fget=lambda s: s.timestampTuple[4])
 	second	= property(fget=lambda s: s.timestampTuple[5])
@@ -170,31 +181,26 @@ class Log(object):
 PATTERN = re.compile(
 	r"""
 		^
-		([0-9]{,3}\.[0-9]{,3}\.[0-9]{,3}\.[0-9]{,3})
+		([0-9]{,3}\.[0-9]{,3}\.[0-9]{,3}\.[0-9]{,3})  # ip-address
 		\s
-		([^ ]{1,})
+		(\S+)  # -
 		\s
-		([^ ]{1,}|\-)
+		(\S+)  # login
 		\s
-		\[([0-9]{2}\/[A-Za-z]{3}\/[0-9]{1,4}:[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}
+		\[([0-9]{2}/[A-Za-z]{3}/[0-9]{1,4}:[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})\]  # time
 		\s
-		[+\-][0-9]{4})\]
+		"([A-Z]+)  # request-line
 		\s
-		"([A-Z ]+)
+		([^"]*)    # url
 		\s
-		([^"]*)
+		([^"]*)"   # protocol
 		\s
-		([^"]*)"
+		([0-9]{3})  # status
 		\s
-		([0-9]{3})
+		([0-9]{1,}|-)  # content-length
 		\s
-		([0-9]{1,}|\-)
-		(?:
-			\s
-			"([^"]*|\-)"
-			\s
-			"([^"]+)"
-		)
+		"([^"]*|-)"  # referer
+		\s
+		"([^"]+)"  # user-agent
 		$
 	""", re.VERBOSE)
-	
